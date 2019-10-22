@@ -170,6 +170,9 @@ elif output.endswith(".html"):
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <style>
 
+svg {
+  margin: 0.5rem;
+}
 .links line {
   stroke: #999;
   stroke-opacity: 0.8;
@@ -207,14 +210,8 @@ circle.quote {
   fill: #17becf;
 }
 
-text {
-  font-family: 'Ariel', sans serif;
-}
-
 #tweet {
   position: absolute;
-  left: 20px;
-  top: 28px;
 }
 
 </style>
@@ -222,8 +219,8 @@ text {
 <div id="tweet"></div>
 <script>
 
-var width = 2000;
-var height = 2000;
+var width = 1750;
+var height = 1750;
 
 var radius = 3.5;
 
@@ -243,6 +240,9 @@ svg.append("text").attr("x", 15).attr("y", 7).text("Tweet").style("font-size", "
 svg.append("text").attr("x", 75).attr("y", 7).text("Quote").style("font-size", "14px").style("font-family", "arial, sans-serif").attr("alignment-baseline","middle")
 svg.append("text").attr("x", 135).attr("y", 7).text("Reply").style("font-size", "14px").style("font-family", "arial, sans-serif").attr("alignment-baseline","middle")
 
+svg.append("circle").attr("cx",183).attr("cy",6).attr("r", 4).style("fill", "#fff").style("stroke", "#999")
+svg.append("text").attr("x", 193).attr("y", 7).text("Retweet").style("font-size", "14px").style("font-family", "arial, sans-serif").attr("alignment-baseline","middle")
+
 var simulation = d3.forceSimulation()
     .velocityDecay(0.6)
     .force("link", d3.forceLink().id(d => d.id).distance(1).iterations(1))
@@ -260,7 +260,7 @@ var link = svg.append("g")
   .attr("class", function(d) { return d.type; });
 
 var node = svg.append("g")
-    .attr("class", "nodes")
+  .attr("class", "nodes")
   .selectAll("circle")
   .data(graph.nodes)
   .enter().append("circle")
@@ -268,11 +268,7 @@ var node = svg.append("g")
     .attr("class", function(d) { return d.type; })
     .attr('cursor', 'pointer')
     .on('mouseover.fade', fade(0.1))
-    .on('mouseout.fade', fade(1))
-    .call(d3.drag()
-        .on("start", dragstarted)
-        .on("drag", dragged)
-        .on("end", dragended));
+    .on('mouseout.fade', fade(1));
 
 node.append("title")
     .text(function(d) { return d.screen_name; });
@@ -304,6 +300,13 @@ svg.on("click", function(d) {
   $("#tweet").empty();
 });
 
+var drag_handler = d3.drag()
+	.on("start", drag_start)
+	.on("drag", drag_drag)
+	.on("end", drag_end);	
+	
+drag_handler(node);
+
 simulation
     .nodes(graph.nodes)
     .on('tick', ticked);
@@ -311,10 +314,27 @@ simulation
 simulation.force('link')
     .links(graph.links);
 
-    
+function drag_start(d) {
+ if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+}
+
+function drag_drag(d) {
+  d.fx = d3.event.x;
+  d.fy = d3.event.y;
+}
+
+function drag_end(d) {
+  if (!d3.event.active) simulation.alphaTarget(0);
+  d.fx = null;
+  d.fy = null;
+}
+
 function ticked() {
     node
-        .attr('transform', function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
+        .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
         
     link
         .attr("x1", function(d) { return d.source.x; })
@@ -322,24 +342,6 @@ function ticked() {
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
 }  
-
-
-function dragstarted(d) {
-  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-  d.fx = d.x;
-  d.fy = d.y;
-}
-
-function dragged(d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
-}
-
-function dragended(d) {
-  if (!d3.event.active) simulation.alphaTarget(0);
-  d.fx = null;
-  d.fy = null;
-}
 
 const linkedByIndex = {};
   graph.links.forEach(d => {
