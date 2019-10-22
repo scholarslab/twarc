@@ -207,6 +207,10 @@ circle.quote {
   fill: #17becf;
 }
 
+text {
+  font-family: 'Ariel', sans serif;
+}
+
 #tweet {
   position: absolute;
   left: 20px;
@@ -232,7 +236,12 @@ var svg = d3.select("svg")
     .attr("height", height)
     .attr("width", width);
 
-var color = d3.scaleOrdinal(d3.schemeCategory20c);
+svg.append("circle").attr("cx",5).attr("cy",6).attr("r", 4).style("fill", "#f0027f")
+svg.append("circle").attr("cx",65).attr("cy",6).attr("r", 4).style("fill", "#17becf")
+svg.append("circle").attr("cx",125).attr("cy",6).attr("r", 4).style("fill", "#999")
+svg.append("text").attr("x", 15).attr("y", 7).text("Tweet").style("font-size", "14px").style("font-family", "arial, sans-serif").attr("alignment-baseline","middle")
+svg.append("text").attr("x", 75).attr("y", 7).text("Quote").style("font-size", "14px").style("font-family", "arial, sans-serif").attr("alignment-baseline","middle")
+svg.append("text").attr("x", 135).attr("y", 7).text("Reply").style("font-size", "14px").style("font-family", "arial, sans-serif").attr("alignment-baseline","middle")
 
 var simulation = d3.forceSimulation()
     .velocityDecay(0.6)
